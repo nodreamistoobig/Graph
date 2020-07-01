@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <fstream>
 #include <queue>
 #include "Nodes.h"
@@ -17,35 +17,34 @@ int main()
 	readNodes("TestGraph.txt", graph);
 	graph1 = graph;
 	cout << "breadthSearch" << endl;
-	while (graph1.begin()!= graph1.end()) { breadthSearch(graph1); }
+	while (graph1.begin()!= graph1.end()) //пока есть несоединенные в отдельные графы вершины, продолжаем их искать 
+		breadthSearch(graph1); //метод поиска в ширину
 	graph2 = graph;
 	cout << "depthSearch" << endl;
-	while (graph2.begin() != graph2.end()) { depthSearch(graph2); }
-	
-
-	
+	while (graph2.begin() != graph2.end()) 
+		depthSearch(graph2); 	//метод поиска в глубину
 }
 
 void breadthSearch(Graph& graph) {
-	queue<Node*> q; 
-	q.push(*graph.begin());
-	set<Node*> visited;
+	queue<Node*> q; 			//создаем очередь из вершин, которые нужно посетить
+	q.push(*graph.begin());			
+	set<Node*> visited;			//создаем набор уже посещенных вершин
 
 	while (!q.empty()) {
 
-		Node* next = q.front(); q.pop();
-		visited.insert(next);
-		for (node_iterator it = next->neighbours.begin(); it != next->neighbours.end(); it++)
-			if (visited.find(*it) == visited.end())
-				q.push(*it);
+		Node* next = q.front(); q.pop(); //берем первый элемент на рассмотрение и удаляем его из очереди 
+		visited.insert(next);		//помечаем его, как посещенный
+		for (node_iterator it = next->neighbours.begin(); it != next->neighbours.end(); it++) //ищем всех соседей этого элемента
+			if (visited.find(*it) == visited.end())  //если мы ещё не посещали этого соседа
+				q.push(*it);			//помещаем его в очередь
 	}
 	for (node_iterator v = visited.begin(); v != visited.end(); v++) {
 		for (int n = 0; n < 50; n++) {
 			if (nodes[n].getName() == (*v)->getName()) {
-				graph.removeNode(&nodes[n]);
+				graph.removeNode(&nodes[n]);		//удаляем из графа все посещенные вершины
 			}
 		}
-		cout << (*v)->getName() << " ";
+		cout << (*v)->getName() << " ";				//выводим вершины, которые вошли в единый граф
 	}
 	cout << endl;
 }
@@ -53,17 +52,17 @@ void breadthSearch(Graph& graph) {
 void depthSearch(Graph& graph) {
 	set<Node*> visited;
 	
-	Node* next = *graph.begin(); 
-	visited.insert(next);
+	Node* next = *graph.begin(); 	
+	visited.insert(next);		//вносим в посещенные вершины первый узел графа
 	for (node_iterator it = next->neighbours.begin(); it != next->neighbours.end(); it++) {
-		visitInsert(it, visited);
+		visitInsert(it, visited);			//проходимся по всем его соседям и вносим их в посещенные вершины
 	}
 
 	for (node_iterator v = visited.begin(); v != visited.end(); v++) {
-		cout << (*v)->getName() << " ";
+		cout << (*v)->getName() << " ";			//выводим вершины, которые вошли в единый граф
 		for (int n = 0; n < 50; n++) {
 			if (nodes[n].getName() == (*v)->getName()) {
-				graph.removeNode(&nodes[n]);
+				graph.removeNode(&nodes[n]);		//удаляем из графа все посещенные вершины
 			}
 		}
 	}
@@ -71,16 +70,14 @@ void depthSearch(Graph& graph) {
 }
 
 void visitInsert(node_iterator it, set<Node*>& visited) {
-	visited.insert(*it);
-	for (node_iterator n = (*it)->neighbours.begin(); n != (*it)->neighbours.end(); n++) {
+	visited.insert(*it);			//вставляем в посещенные вершины первого соседа
+	for (node_iterator n = (*it)->neighbours.begin(); n != (*it)->neighbours.end(); n++) { //перебираем всех его соседей
 		int vis = 0;
-		for (node_iterator v = visited.begin(); v != visited.end(); v++) {
-			if ((*n)->getName() == (*v)->getName()) {
-				vis++;
-			}  
-		}
+		for (node_iterator v = visited.begin(); v != visited.end(); v++) 
+			if ((*n)->getName() == (*v)->getName()) 
+				vis++;				//проверяем, посещали ли мы уже эту вершину (соседей этого соседа)
 		if (vis == 0)
-			visitInsert(n, visited);
+			visitInsert(n, visited);		//если нет, проверяем всех его соседей
 	}
 }
 
@@ -97,60 +94,44 @@ bool readNodes(const char* filename, Graph& graph)
 	int name_a, name_b;  
 	int i = 0;
 	while (!in.eof()) { 
-		Node* node_a = 0; 
-		Node* node_b = 0;
 		in >> name_a >> name_b;
-		//cout << "name_a=" << name_a << " name_b=" << name_b <<endl<<"   ";   
 
 		int foundA=-1, foundB=-1; 
 
 		for (int n = 0; n < 50; n++) {
-			if (nodes[n].getName() == name_a) {
-				foundA = n;
-				//cout << "name_a already exist" << endl << "   ";
-			}
-			else if (nodes[n].getName() == name_b) {
+			if (nodes[n].getName() == name_a) 
+				foundA = n;			//если  вершина с таким именем существует запоминаем её
+			else if (nodes[n].getName() == name_b) 
 				foundB = n;
-				//cout << "name_b already exist" << endl << "   ";
-			}
 		}
 
 		
-		if (foundA==-1) {					
-			nodes[i].setName(name_a); 
-			graph.addNode(&nodes[i]);		
+		if (foundA==-1) {					//если первая вершина еще не существует
+			nodes[i].setName(name_a); 			//создаём её
+			graph.addNode(&nodes[i]);			//дбавляем в граф
 			i++;	
-			//cout << " Creat nb1 ";
-			if (foundB==-1)				
+			if (foundB==-1)					//если вторая вершина еще не существует
 			{
-				nodes[i].setName(name_b);
+				nodes[i].setName(name_b);		//создаем её
 				graph.addNode(&nodes[i]);
-				//cout << " Creat nb2 ";
-				graph.addEdge(&nodes[i-1], &nodes[i]);		
-				//cout << " Creat EDGE workable " << endl;
+				graph.addEdge(&nodes[i-1], &nodes[i]);	//соединяем вершины
 				i++;
 			}
-			else {								
-				graph.addEdge(&nodes[i - 1], &nodes[foundB]);	
-				//cout<< "Existed Link = "<< nodes[foundB].getName();
-				//cout << " Creat EDGE unworkable?" << endl;
+			else {							//если вторая вершина существует, а первая - нет					
+				graph.addEdge(&nodes[i - 1], &nodes[foundB]);	//соединяем вершины, используя ту, что запомнили ранее
 				foundB = -1;
 			}
 		}
-		else if (foundB==-1)		
+		else if (foundB==-1)						//то же самое, если первая существует, а вторая - нет
 		{
 			nodes[i].setName(name_b);	
 			graph.addNode(&nodes[i]);
-			//cout << " Creat nb2. Existed Link = "<< nodes[foundA].getName();
 			graph.addEdge(&nodes[foundA], &nodes[i]);			
 			i++;
 			foundA = -1;
-			//cout << " Creat EDGE unworkable?" << endl;
 		}
-		else {				
+		else 								//если обе существуют
 			graph.addEdge(&nodes[foundA], &nodes[foundB]);		
-			//cout << "Existed Links  = "<< nodes[foundA].getName()<<", "<< nodes[foundA].getName() <<" Creat EDGE unworkable?" << endl;
-		}
 	}
 	return true;
 }
